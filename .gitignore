@@ -216,3 +216,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Explicitly ignored
+*.ignore.*
+*.ignored.*
+*.gitignored.*
+*.ignore
+*.ignored
+*.gitignored
+ignore.*
+ignored.*
+gitignored.*
+
+# Python cProfile outputs (note: non-standard extension)
+*.pycprof

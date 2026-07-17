@@ -1,0 +1,6 @@
+Sample rate: 44100 Hz
+Duration: 100.0 seconds
+Total samples rendered: 4410000
+Total tones rendered: 100
+Elapsed time for attaching tones: 4.176 ms
+Elapsed time for rendering: 6512.378 ms
