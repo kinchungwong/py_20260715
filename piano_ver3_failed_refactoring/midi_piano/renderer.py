@@ -1,0 +1,1 @@
+amp * np.sin(omega * iota) * np.exp(log_decay * iota)
