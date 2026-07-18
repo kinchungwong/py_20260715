@@ -289,7 +289,6 @@ class NoteState:
     over time.
     """
     cfg_piano: Final[PianoCfg]
-    cfg_ds: Final[DampedSine]
     cfg_lr: Final[LinearRamp]
     trend: Trend
     level: float
@@ -318,19 +317,22 @@ class NoteState:
     def __init__(
             self,
             cfg_piano: PianoCfg,
-            cfg_ds: DampedSine,
             cfg_lr: LinearRamp,
             note_partials: NotePartialsBase,
             ) -> None:
         self.cfg_piano = cfg_piano
-        self.cfg_ds = cfg_ds
         self.cfg_lr = cfg_lr
         self.trend = Trend.SILENT
         self.level = 0.0
         self.level_min = 0.0
         self.level_max = 0.0 # To be determined by attack velocity.
+        # Each partial owns its own DampedSine, derived from its own freq/tau.
+        samp_rate = cfg_piano.sample_rate
         self.partial_states = [
-            (partial, PartialState(cfg_piano, cfg_ds))
+            (
+                partial,
+                PartialState(cfg_piano, DampedSine(samp_rate, partial.p_freq, partial.p_tau)),
+            )
             for partial in note_partials.valid_partials
         ]
     

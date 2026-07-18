@@ -85,7 +85,7 @@ class NotePartials(NotePartialsBase):
         #
         # Normalize relative amplitudes by sum of squares.
         #
-        sum_sq_amp = sum((tup[3] ** 2) for tup in tups)
+        sum_sq_amp = sum((tup[2] ** 2) for tup in tups)
         scale_amp = 1.0 / math.sqrt(sum_sq_amp) if sum_sq_amp > 0.0 else 1.0
         partials = [
             Partial(note_id=key.note_id, partial_k=k, p_freq=p_freq, p_tau=p_tau, p_amp=(p_amp * scale_amp))
