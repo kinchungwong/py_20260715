@@ -133,7 +133,7 @@ class Partial:
     p_tau: float
     p_amp: float
 
-    def __eq__(self, other: "Partial" | Any) -> bool:
+    def __eq__(self, other: "Partial | Any") -> bool:
         if not isinstance(other, Partial):
             return False
         return self.note_id == other.note_id and self.partial_k == other.partial_k

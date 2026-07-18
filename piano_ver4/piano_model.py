@@ -1,5 +1,5 @@
 import math
-from typing import Final, Mapping
+from typing import Final, Mapping, override
 from piano_data_model import PianoModelBase, NotePartialsBase, PianoCfg, PianoKey, Partial
 
 
@@ -13,21 +13,26 @@ class PianoModel(PianoModelBase):
         }
 
     @property
+    @override
     def cfg(self) -> PianoCfg:
         return self._cfg
     
     @property
+    @override
     def keys(self) -> Mapping[int, PianoKey]:
         return self._keys
 
+    @override
     def _note_to_fundamental(self, note_id: int) -> float:
         """Convert a MIDI note to its fundamental frequency in Hz."""
         return 440.0 * (2.0 ** ((note_id - 69) / 12.0))
 
+    @override
     def _partial_freq(self, fund_freq: float, k: int) -> float:
         inharmonicity = self._cfg.inharmonicity
         return fund_freq * k * math.sqrt(1.0 + inharmonicity * k * k)
     
+    @override
     def _partial_amp(self, k: int) -> float:
         """Compute the amplitude factor for a given partial index k,
         considering hammer position and amplitude rolloff.
@@ -44,6 +49,7 @@ class PianoModel(PianoModelBase):
         mode_amp = abs(math.sin(math.pi * k * cfg.hammer_pos)) ** 16
         return mode_amp / (k ** cfg.amp_pcoef)
     
+    @override
     def _partial_tau(self, k: int) -> float:
         """Compute the time constant for a given partial index k,
         considering the fundamental time constant and decay rolloff.
@@ -51,9 +57,11 @@ class PianoModel(PianoModelBase):
         cfg = self._cfg
         return cfg.tau_fund / (1.0 + cfg.tau_pcoef * (k - 1))
 
+    @override
     def _valid_partial(self, k: int, p_freq: float, p_amp: float) -> bool:
         """Check if a partial is valid based on frequency and amplitude thresholds.
         """
+        del k # Pyright unused
         cfg = self._cfg
         if p_freq >= min(cfg.audible_hz, cfg.sample_rate * 0.5):
             return False
@@ -94,14 +102,17 @@ class NotePartials(NotePartialsBase):
         self._partials = tuple(partials)
 
     @property
+    @override
     def cfg(self) -> PianoCfg:
         return self._cfg
 
     @property
+    @override
     def key(self) -> PianoKey:
         return self._key
     
     @property
+    @override
     def valid_partials(self) -> tuple[Partial, ...]:
         return self._partials
 
