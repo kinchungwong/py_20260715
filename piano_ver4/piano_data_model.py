@@ -219,10 +219,21 @@ class DampedSine:
 
 
 class Trend(Enum):
-    SILENT = "silent"
-    RISE = "rise"
-    LEVEL = "level"
-    FALL = "fall"
+    """Enumeration of possible trends.
+    Values:
+        - SILENT: The note is silent; no rendering occurs.
+        - RISE: The note is rising in level (attack phase).
+        - LEVEL: The note is at a constant level (sustain phase).
+        - FALL: The note is falling in level (release phase).
+        - RETRIG_YIELD: The note is yielding to a retriggered note, 
+            falling to silence at the negative of ramp_rise.
+            (This accomplishes cross-fade as the new note rises.)
+    """
+    SILENT = "Silent"
+    RISE = "Rise"
+    LEVEL = "Level"
+    FALL = "Fall"
+    RETRIG_YIELD = "RetrigYield"
 
 
 class LinearRamp:
@@ -288,6 +299,25 @@ class NoteState:
     of a single note over time, and the DampedSine state of each of its partials
     over time.
     """
+
+    """
+    Note on re-trigger:
+    A realistic way to implement re-triggering is to have the current note
+    yield to the new note. Trend.RETRIG_YIELD is designated for this purpose.
+    To implement, the current note will be allowed to fall to silence quickly,
+    while a new instance of NoteState is created for the new note, which will
+    rise to its new max level determined by the new velocity. The new note will
+    have newly initialized PartialStates, which improves realisticity by
+    ensuring the partials will get new randomized phases. Such implementation
+    resolves continuity issues in ways that other approaches cannot.
+
+    In actual implementation, each piano key will be assigned two NoteState
+    instances. When a re-trigger happens, the originally active one goes into
+    RETRIG_YIELD, while the newly active one goes into RISE. The original
+    NoteState will eventually go into SILENT, and remain so until the next
+    re-trigger.
+    """
+
     cfg_piano: Final[PianoCfg]
     cfg_lr: Final[LinearRamp]
     trend: Trend
@@ -374,6 +404,9 @@ class NoteState:
         """Start the sustain phase of the note.
 
         The level is held constant at the current level.
+
+        Note: Sustain simply means it is neither rising nor falling, as a result
+        of having reached the target level. Exponential decay continues.
         """
         self.trend = Trend.LEVEL
         self.level_min = self.level
@@ -402,6 +435,9 @@ class NoteState:
             state.next_phi = 0.0
             state.next_amp = 0.0
 
+    def retrigger_yield(self) -> None:
+        raise NotImplementedError("retrigger_yield() is not implemented yet")
+
     def advance(self, nsamps: int) -> None:
         """Advance the internal state by `nsamps` samples.
         """
@@ -421,11 +457,20 @@ class NoteState:
             state.advance(nsamps)
             sum_sq_amp += state.next_amp ** 2
         #
-        # We update the level if trend is RISE or FALL.
+        # We update the level if trend is RISE, FALL, or RETRIG_YIELD.
         #
         if self.trend != Trend.LEVEL:
             cfg_lr = self.cfg_lr
-            ramp = cfg_lr.ramp_rise if self.trend == Trend.RISE else cfg_lr.ramp_fall
+            if self.trend == Trend.RISE:
+                ramp = cfg_lr.ramp_rise
+            elif self.trend == Trend.FALL:
+                # negative as configured
+                ramp = cfg_lr.ramp_fall
+            elif self.trend == Trend.RETRIG_YIELD:
+                # originally positive, make negative.
+                ramp = -cfg_lr.ramp_rise
+            else:
+                raise RuntimeError(f"Internal error: Unimplemented trend: {self.trend}")
             level = (self.level + ramp * nsamps)
             level = max(self.level_min, min(self.level_max, level))
             self.level = level
