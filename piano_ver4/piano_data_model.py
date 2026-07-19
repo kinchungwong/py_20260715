@@ -438,6 +438,25 @@ class NoteState:
     def retrigger_yield(self) -> None:
         raise NotImplementedError("retrigger_yield() is not implemented yet")
 
+    def get_ramp(self) -> float:
+        """Returns the current ramp value based on the trend.
+
+        The ramp value is positive for RISE, negative for FALL, and zero for LEVEL.
+        """
+        if self.trend == Trend.RISE:
+            return self.cfg_lr.ramp_rise
+        elif self.trend == Trend.FALL:
+            return self.cfg_lr.ramp_fall
+        elif self.trend == Trend.RETRIG_YIELD:
+            # originally positive, make negative.
+            return -self.cfg_lr.ramp_rise
+        else:
+            return 0.0
+        
+    @property
+    def ramp(self) -> float:
+        return self.get_ramp()
+
     def advance(self, nsamps: int) -> None:
         """Advance the internal state by `nsamps` samples.
         """
