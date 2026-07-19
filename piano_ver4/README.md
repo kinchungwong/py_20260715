@@ -62,3 +62,21 @@ to run slower.
 Meanwhile, both production code and unit tests belong to the
 production branch, and will have to be brought up to the production
 code standards.
+
+## note_cache.py
+
+### Authorship attribution
+
+`note_cache.py` is hand-written, as a vitrified record of how humans
+normally write code, in an object-oriented way, even if the code
+isn't meant to be performant. The goal is to illustrate the flow of
+data in the piano model (now that the caching technique is used),
+and to provide an analytical reference so that it can be numerically
+compared to other implementations in unit tests.
+
+(Planned) There will also be an `render_uncached.py` (not yet started),
+with further simplification.
+
+(Planned) `note_cache_vec.py` will be the hand-written and redesigned
+version of the `piano_render.py` contributed by Claude Code, with some
+further optimizations. Refer to the source level docstring for details.
