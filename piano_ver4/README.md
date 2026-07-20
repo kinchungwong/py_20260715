@@ -17,7 +17,7 @@ Type-checked with Pyright.
 Fully written by Claude Code, Opus 4.8 (high, 1M context).
 
 Write-up (also by Claude Code): 
-[[laude/deep_research/2026-07-18-per-note-synthesis-piano-ver4.md]]
+[[claude/deep_research/2026-07-18-per-note-synthesis-piano-ver4.md]]
 
 ## Next steps
 
